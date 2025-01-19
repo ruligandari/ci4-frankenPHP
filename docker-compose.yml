@@ -1,0 +1,47 @@
+
+services:
+  php:
+    build: .
+    ports:
+      - "8080:8080"    # FrankenPHP melayani HTTP langsung di port 8080
+    volumes:
+      - ./public:/app/public # Folder `public` dari CodeIgniter sebagai root server
+      - ./app:/app/app # Folder `app` dari CodeIgniter sebagai root aplikasi
+      - ./vendor:/app/vendor # Folder `vendor` dari CodeIgniter
+      - ./writable:/app/writable # Writable folder untuk cache, logs, dll.
+      - ./.env:/app/.env # File .env untuk konfigurasi CodeIgniter
+      - ./stress-test.json:/app/stress-test.json # File konfigurasi stress test
+      - ./Caddyfile:/etc/caddy/Caddyfile # File konfigurasi Caddy
+    depends_on:
+      - db
+    environment:
+      CI_ENVIRONMENT: development
+    tty: true # Untuk log yang lebih baik dalam mode development
+
+  db:
+    image: mysql:8.0
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: presensi_qimed
+      MYSQL_USER: ci_user
+      MYSQL_PASSWORD: ci_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    # restart: always
+    ports:
+      - "8081:80" # Akses phpMyAdmin di http://localhost:8081
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    depends_on:
+      - db
+
+volumes:
+  db_data:

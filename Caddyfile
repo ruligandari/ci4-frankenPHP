@@ -1,0 +1,9 @@
+{
+    frankenphp 
+}
+
+http://:8080 {
+    root * /app/public
+    php_server
+    file_server
+}
